@@ -13,7 +13,7 @@ fun main() {
 
 fun Application.module() {
     routing {
-        get("/") {
+        get {
             call.respondText(sayHello("Ktor"))
         }
     }

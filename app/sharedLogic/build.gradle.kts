@@ -38,6 +38,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":core"))
             // put your Multiplatform dependencies here
+            implementation(libs.ktor.client.webrtc)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

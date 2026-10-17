@@ -1,11 +1,8 @@
 package com.pintapontus.chatting
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -14,16 +11,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
-
-import pintachatting.app.sharedui.generated.resources.Res
-import pintachatting.app.sharedui.generated.resources.compose_multiplatform
+import kotlinx.coroutines.launch
 
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        var isConnecting by remember { mutableStateOf(false) }
+        val logs = remember { mutableStateListOf<String>() }
         Column(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primaryContainer)
@@ -31,19 +27,26 @@ fun App() {
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+            Button(
+                enabled = !isConnecting,
+                onClick = {
+                    logs.clear()
+                    isConnecting = true
+                    scope.launch {
+                        try {
+                            connect { logs.add(it) }
+                        } catch (e: Exception) {
+                            logs.add("Errore: ${e.message}")
+                        } finally {
+                            isConnecting = false
+                        }
+                    }
                 }
+            ) {
+                Text(if (isConnecting) "Connessione..." else "Avvia WebRTC")
             }
+
+            logs.forEach { Text(it) }
         }
     }
 }
